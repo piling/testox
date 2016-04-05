@@ -1,6 +1,6 @@
 toxcore:
 ifneq ($(wildcard ../toxcore/.*),)
-	cd ../toxcore && autoreconf -i && ./configure && make && make install
+	cd ../toxcore && autoreconf -i && ./configure --prefix=/user && make && make install
 else
 	cd ../ && git clone https://github.com/pirebok/toxcore.git && cd toxcore && autoreconf -i && ./configure --prefix=/usr && make && make install
 endif
