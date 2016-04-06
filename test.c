@@ -8,6 +8,7 @@
 #include <endian.h>
 
 
+void test_binary_encode(void);
 void test_kbucket(void);
 void test_distance(void);
 
@@ -30,10 +31,19 @@ int main(void)
     else if(!memcmp(test_name, "KBucketIndex", len_of_test_name)){
         test_kbucket();
     }
+    else if(!memcmp(test_name, "BinaryEncode", len_of_test_name)){
+        test_binary_encoding();
+    }
+    else
+        printf("Unhandled test: %s", test_name);
 
     return 0;
 }
 
+
+void test_binary_encode(void){
+    return 0;
+}
 
 void test_kbucket(void) {
     /*
