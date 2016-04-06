@@ -36,16 +36,17 @@ int main(void)
     }
     else{
 
-        //failure tag and 7-byte of prefixed-length
-        for (int i = 0; i < 8; i++) {
-            putchar(0);
-        }
+        //failure tag \x00
+        putchar(0);
 
         //error message
         char failure_message[] = "Unhandled test:";
         strncat(failure_message, test_name,strlen(test_name)+1);
 
-        //last byte of prefixed-length of error message
+        //prefixed-length of error message
+        for (int i = 0; i < 8; i++) {
+            putchar(0);
+        }
         putchar(strlen(failure_message));
 
         printf("%s",failure_message);
