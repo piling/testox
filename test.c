@@ -35,9 +35,12 @@ int main(void)
         test_binary_encode();
     }
     else{
+
         char *failure_message = "\x00\x00\x00\x00\x00\x00\x00\x00\x08";
-        failure_message = strcat(test_name, failure_message);
-        fwrite(failure_message, 1, sizeof failure_message, stdout);
+        //failure_message = strcat(test_name, failure_message);
+        //fwrite(failure_message, 1, sizeof failure_message, stdout);
+        printf("%s", failure_message);
+        printf("Unhandled test: %s\n", test_name);
     }
 
     return 0;
