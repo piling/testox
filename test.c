@@ -31,13 +31,31 @@ int main(void)
     else if(!memcmp(test_name, "KBucketIndex", len_of_test_name)){
         test_kbucket();
     }
+    else if(!memcmp(test_name, "KBucketNodes", len_of_test_name)){
+        putchar(2);
+    }
+    else if(!memcmp(test_name, "NonceIncrement", len_of_test_name)){
+        putchar(2);
+    }
     else if(!memcmp(test_name, "BinaryEncode NodeInfo", len_of_test_name)){
+        putchar(2);
+    }
+    else if(!memcmp(test_name, "BinaryDecode NodeInfo", len_of_test_name)){
+        putchar(2);
+    }
+    else if(!memcmp(test_name, "BinaryEncode Word32", len_of_test_name)){
         putchar(2);
     }
     else if(!memcmp(test_name, "BinaryDecode Word32", len_of_test_name)){
         putchar(2);
     }
+    else if(!memcmp(test_name, "BinaryEncode String", len_of_test_name)){
+        putchar(2);
+    }
     else if(!memcmp(test_name, "BinaryDecode String", len_of_test_name)){
+        putchar(2);
+    }
+    else if(!memcmp(test_name, "FailureTest", len_of_test_name)){
         putchar(2);
     }
     else if(!memcmp(test_name, "SuccessTest", len_of_test_name)){
@@ -47,7 +65,6 @@ int main(void)
         putchar(2);
     }
     else{
-
         //error message
         char failure_message[] = "Unhandled test:";
         strncat(failure_message, test_name,strlen(test_name)+1);
@@ -65,14 +82,11 @@ int main(void)
         //fwrite(prefix_length, sizeof prefix_length, 1, stdout);
         putchar(strlen(failure_message));
 
-        printf("%s",failure_message);
-
+        printf("%s", failure_message);
     }
 
     return 0;
 }
-
-
 
 
 void test_kbucket(void) {
