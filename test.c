@@ -36,11 +36,20 @@ int main(void)
     }
     else{
 
-        char *failure_message = "\x00\x00\x00\x00\x00\x00\x00\x00\x08";
-        //failure_message = strcat(test_name, failure_message);
-        //fwrite(failure_message, 1, sizeof failure_message, stdout);
-        printf("%s", failure_message);
-        printf("Unhandled test: %s\n", test_name);
+        //failure tag and 7-byte of prefixed-length
+        for (int i = 0; i < 8; i++) {
+            putchar(0);
+        }
+
+        //error message
+        char failure_message[] = "Unhandled test:";
+        strncat(failure_message, test_name,strlen(test_name)+1);
+
+        //last byte of prefixed-length of error message
+        putchar(strlen(failure_message));
+
+        printf("%s",failure_message);
+
     }
 
     return 0;
