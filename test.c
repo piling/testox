@@ -8,7 +8,7 @@
 #include <endian.h>
 
 
-void test_binary_encode(void);
+
 void test_kbucket(void);
 void test_distance(void);
 
@@ -31,22 +31,38 @@ int main(void)
     else if(!memcmp(test_name, "KBucketIndex", len_of_test_name)){
         test_kbucket();
     }
-    else if(!memcmp(test_name, "BinaryEncode", len_of_test_name)){
-        test_binary_encode();
+    else if(!memcmp(test_name, "BinaryEncode NodeInfo", len_of_test_name)){
+        putchar(2);
+    }
+    else if(!memcmp(test_name, "BinaryDecode Word32", len_of_test_name)){
+        putchar(2);
+    }
+    else if(!memcmp(test_name, "BinaryDecode String", len_of_test_name)){
+        putchar(2);
+    }
+    else if(!memcmp(test_name, "SuccessTest", len_of_test_name)){
+        putchar(2);
+    }
+    else if(!memcmp(test_name, "SkippedTest", len_of_test_name)){
+        putchar(2);
     }
     else{
-
-        //failure tag \x00
-        putchar(0);
 
         //error message
         char failure_message[] = "Unhandled test:";
         strncat(failure_message, test_name,strlen(test_name)+1);
 
+        //failure tag \x00
+        putchar(0);
+
         //prefixed-length of error message
-        for (int i = 0; i < 8; i++) {
+
+        for (int i = 0; i < 7; i++) {
             putchar(0);
         }
+
+        //char *prefix_length = "\x00\x00\x00\x00\x00\x00\x00";
+        //fwrite(prefix_length, sizeof prefix_length, 1, stdout);
         putchar(strlen(failure_message));
 
         printf("%s",failure_message);
@@ -57,9 +73,7 @@ int main(void)
 }
 
 
-void test_binary_encode(void){
 
-}
 
 void test_kbucket(void) {
     /*
