@@ -32,10 +32,11 @@ int main(void)
         test_kbucket();
     }
     else if(!memcmp(test_name, "BinaryEncode", len_of_test_name)){
-        test_binary_encoding();
+        test_binary_encode();
     }
     else{
-        char failure_message[] = "\x00\x00\x00\x00\x00\x00\x00\x00\x08" test_name;
+        char *failure_message = "\x00\x00\x00\x00\x00\x00\x00\x00\x08";
+        failure_message = strcat(test_name, failure_message);
         fwrite(failure_message, 1, sizeof failure_message, stdout);
     }
 
@@ -44,7 +45,7 @@ int main(void)
 
 
 void test_binary_encode(void){
-    return 0;
+
 }
 
 void test_kbucket(void) {
