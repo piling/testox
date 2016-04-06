@@ -34,8 +34,10 @@ int main(void)
     else if(!memcmp(test_name, "BinaryEncode", len_of_test_name)){
         test_binary_encoding();
     }
-    else
-        printf("Unhandled test: %s", test_name);
+    else{
+        char failure_message[] = "\x00\x00\x00\x00\x00\x00\x00\x00\x08" test_name;
+        fwrite(failure_message, 1, sizeof failure_message, stdout);
+    }
 
     return 0;
 }
