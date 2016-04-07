@@ -12,10 +12,18 @@
 void test_kbucket(void);
 void test_distance(void);
 
+typedef struct{
+    int ip_type;
+    unsigned char ip_address[16];
+    unsigned char port[2];
+    unsigned char public_key[32];
+}NodeInfo;
+
+
 int main(void)
 {
     uint64_t len_of_test_name;
-    // Reading test name(e.g. Distance) from stdin.
+    // Reading 64 bit integer len of test name(e.g. Distance) from stdin.
     fread(&len_of_test_name, sizeof len_of_test_name, 1, stdin);
     // swapping endiannes and returning len of test name
     len_of_test_name = htobe64(len_of_test_name);
@@ -44,7 +52,36 @@ int main(void)
         putchar(2);
     }
     else if(!memcmp(test_name, "BinaryEncode Word32", len_of_test_name)){
-        putchar(2);
+        uint64_t bencode_len_of_list;
+        // Reading 64 bit length of list
+        fread(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdin);
+        // swapping endiannes and returning len of string
+        bencode_len_of_list = htobe64(bencode_len_of_list);
+        char bencode_string[sizeof(bencode_len_of_list)];
+        fread(&bencode_string, sizeof bencode_string, 1, stdin);
+
+        //word32
+        unsigned int word32;
+        fread(&word32, sizeof word32, 1, stdin);
+
+        //Node Info
+        NodeInfo node_info;
+        fread(&node_info.ip_type, sizeof node_info.ip_type, 1, stdin);
+        fread(&node_info.ip_address, sizeof node_info.ip_address, 1, stdin);
+        fread(&node_info.port, sizeof node_info.port, 1, stdin);
+        fread(&node_info.public_key, sizeof node_info.public_key, 1, stdin);
+
+        //success tag
+        putchar(1);
+        fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
+        fwrite(&bencode_string, sizeof bencode_string, 1, stdout);
+        fwrite(&word32, sizeof word32, 1, stdout);
+        fwrite(&node_info.ip_type, sizeof node_info.ip_type, 1, stdout);
+        fwrite(&node_info.ip_address, sizeof node_info.ip_address, 1, stdout);
+        fwrite(&node_info.port, sizeof node_info.port, 1, stdout);
+        fwrite(&node_info.public_key, sizeof node_info.public_key, 1, stdout);
+
+
     }
     else if(!memcmp(test_name, "BinaryDecode Word32", len_of_test_name)){
         putchar(2);
