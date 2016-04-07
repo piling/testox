@@ -46,12 +46,36 @@ int main(void)
         putchar(2);
     }
     else if(!memcmp(test_name, "BinaryEncode NodeInfo", len_of_test_name)){
-        putchar(2);
+        //Node Info
+        NodeInfo node_info;
+        fread(&node_info.ip_type, sizeof node_info.ip_type, 1, stdin);
+        fread(&node_info.ip_address, sizeof node_info.ip_address, 1, stdin);
+        fread(&node_info.port, sizeof node_info.port, 1, stdin);
+        fread(&node_info.public_key, sizeof node_info.public_key, 1, stdin);
+
+        putchar(1);
+        fwrite(&node_info.ip_type, sizeof node_info.ip_type, 1, stdout);
+        fwrite(&node_info.ip_address, sizeof node_info.ip_address, 1, stdout);
+        fwrite(&node_info.port, sizeof node_info.port, 1, stdout);
+        fwrite(&node_info.public_key, sizeof node_info.public_key, 1, stdout);
+
     }
     else if(!memcmp(test_name, "BinaryDecode NodeInfo", len_of_test_name)){
         putchar(2);
     }
     else if(!memcmp(test_name, "BinaryEncode Word32", len_of_test_name)){
+        //word32
+        unsigned int word32;
+        fread(&word32, sizeof word32, 1, stdin);
+
+        //success tag
+        putchar(1);
+        fwrite(&word32, sizeof word32, 1, stdout);
+    }
+    else if(!memcmp(test_name, "BinaryDecode Word32", len_of_test_name)){
+        putchar(2);
+    }
+    else if(!memcmp(test_name, "BinaryEncode String", len_of_test_name)){
         uint64_t bencode_len_of_list;
         // Reading 64 bit length of list
         fread(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdin);
@@ -60,34 +84,9 @@ int main(void)
         char bencode_string[sizeof(bencode_len_of_list)];
         fread(&bencode_string, sizeof bencode_string, 1, stdin);
 
-        //word32
-        unsigned int word32;
-        fread(&word32, sizeof word32, 1, stdin);
-
-        //Node Info
-        NodeInfo node_info;
-        fread(&node_info.ip_type, sizeof node_info.ip_type, 1, stdin);
-        fread(&node_info.ip_address, sizeof node_info.ip_address, 1, stdin);
-        fread(&node_info.port, sizeof node_info.port, 1, stdin);
-        fread(&node_info.public_key, sizeof node_info.public_key, 1, stdin);
-
-        //success tag
         putchar(1);
         fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
         fwrite(&bencode_string, sizeof bencode_string, 1, stdout);
-        fwrite(&word32, sizeof word32, 1, stdout);
-        fwrite(&node_info.ip_type, sizeof node_info.ip_type, 1, stdout);
-        fwrite(&node_info.ip_address, sizeof node_info.ip_address, 1, stdout);
-        fwrite(&node_info.port, sizeof node_info.port, 1, stdout);
-        fwrite(&node_info.public_key, sizeof node_info.public_key, 1, stdout);
-
-
-    }
-    else if(!memcmp(test_name, "BinaryDecode Word32", len_of_test_name)){
-        putchar(2);
-    }
-    else if(!memcmp(test_name, "BinaryEncode String", len_of_test_name)){
-        putchar(2);
     }
     else if(!memcmp(test_name, "BinaryDecode String", len_of_test_name)){
         putchar(2);
