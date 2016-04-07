@@ -48,17 +48,16 @@ int main(void)
     else if(!memcmp(test_name, "BinaryEncode NodeInfo", len_of_test_name)){
         //Node Info
         NodeInfo node_info;
-        fread(&node_info.ip_type, sizeof node_info.ip_type, 1, stdin);
+        fread(&node_info.ip_type, 1, 1, stdin);
         fread(&node_info.ip_address, sizeof node_info.ip_address, 1, stdin);
         fread(&node_info.port, sizeof node_info.port, 1, stdin);
         fread(&node_info.public_key, sizeof node_info.public_key, 1, stdin);
 
         putchar(1);
-        fwrite(&node_info.ip_type, sizeof node_info.ip_type, 1, stdout);
+        fwrite(&node_info.ip_type, node_info.ip_type, 1, stdout);
         fwrite(&node_info.ip_address, sizeof node_info.ip_address, 1, stdout);
         fwrite(&node_info.port, sizeof node_info.port, 1, stdout);
         fwrite(&node_info.public_key, sizeof node_info.public_key, 1, stdout);
-
     }
     else if(!memcmp(test_name, "BinaryDecode NodeInfo", len_of_test_name)){
         putchar(2);
@@ -76,17 +75,19 @@ int main(void)
         putchar(2);
     }
     else if(!memcmp(test_name, "BinaryEncode String", len_of_test_name)){
+
         uint64_t bencode_len_of_list;
         // Reading 64 bit length of list
         fread(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdin);
         // swapping endiannes and returning len of string
         bencode_len_of_list = htobe64(bencode_len_of_list);
         char bencode_string[sizeof(bencode_len_of_list)];
-        fread(&bencode_string, sizeof bencode_string, 1, stdin);
+        fread(&bencode_string, bencode_len_of_list, 1, stdin);
 
         putchar(1);
         fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
         fwrite(&bencode_string, sizeof bencode_string, 1, stdout);
+
     }
     else if(!memcmp(test_name, "BinaryDecode String", len_of_test_name)){
         putchar(2);
