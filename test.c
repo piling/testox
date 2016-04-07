@@ -75,19 +75,18 @@ int main(void)
         putchar(2);
     }
     else if(!memcmp(test_name, "BinaryEncode String", len_of_test_name)){
-
         uint64_t bencode_len_of_list;
         // Reading 64 bit length of list
         fread(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdin);
         // swapping endiannes and returning len of string
         bencode_len_of_list = htobe64(bencode_len_of_list);
-        char bencode_string[sizeof(bencode_len_of_list)];
+        char bencode_string[bencode_len_of_list];
         fread(&bencode_string, bencode_len_of_list, 1, stdin);
 
         putchar(1);
+        fprintf(stderr,"123");
         fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
         fwrite(&bencode_string, sizeof bencode_string, 1, stdout);
-
     }
     else if(!memcmp(test_name, "BinaryDecode String", len_of_test_name)){
         putchar(2);
