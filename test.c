@@ -84,7 +84,6 @@ int main(void)
         fread(&bencode_string, bencode_len_of_list, 1, stdin);
 
         putchar(1);
-        fprintf(stderr,"123");
         fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
         fwrite(&bencode_string, sizeof bencode_string, 1, stdout);
     }
