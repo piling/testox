@@ -84,9 +84,7 @@ int main(void)
         fread(&bencode_string, bencode_len_of_list, 1, stdin);
 
         putchar(1);
-        char length[] = "\x00\x00\x00\x00\x00\x00\x00\x08";
-        fwrite(&length, sizeof length-1, 1, stdout);
-        //fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
+        fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
         fwrite(&bencode_string, bencode_len_of_list, 1, stdout);
     }
     else if(!memcmp(test_name, "BinaryDecode String", len_of_test_name)){
