@@ -70,6 +70,7 @@ int main(void)
         //success tag
         putchar(1);
         fwrite(&word32, sizeof word32, 1, stdout);
+
     }
     else if(!memcmp(test_name, "BinaryDecode Word32", len_of_test_name)){
         putchar(2);
