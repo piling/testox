@@ -86,7 +86,7 @@ int main(void)
         putchar(1);
         bencode_len_of_list = be64toh(bencode_len_of_list);
         fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
-        fwrite(&bencode_string, bencode_len_of_list, 1, stdout);
+        fwrite(&bencode_string, sizeof bencode_string, 1, stdout);
     }
     else if(!memcmp(test_name, "BinaryDecode String", len_of_test_name)){
         putchar(2);
