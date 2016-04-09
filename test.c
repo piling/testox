@@ -1,24 +1,4 @@
-#define _DEFAULT_SOURCE
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sodium.h>
-#include "../toxcore/toxcore/DHT.h"
-#include <endian.h>
-
-
-
-void test_kbucket(void);
-void test_distance(void);
-
-typedef struct{
-    int ip_type;
-    unsigned char ip_address[16];
-    unsigned char port[2];
-    unsigned char public_key[32];
-}NodeInfo;
-
+#include "test.h"
 
 int main(void)
 {
@@ -33,34 +13,33 @@ int main(void)
     fread(&test_name, len_of_test_name, 1, stdin);
 
     // Determines which test case is given
-    if(!memcmp(test_name, "Distance", len_of_test_name)){
+    if(!memcmp(test_name, DISTANCE, len_of_test_name)){
         test_distance();
     }
-    else if(!memcmp(test_name, "KBucketIndex", len_of_test_name)){
+    else if(!memcmp(test_name, K_BUCKET_INDEX, len_of_test_name)){
         test_kbucket();
     }
     else if(!memcmp(test_name, "KBucketNodes", len_of_test_name)){
-        putchar(2);
+        putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, "NonceIncrement", len_of_test_name)){
-        putchar(2);
+        putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, "BinaryEncode NodeInfo", len_of_test_name)){
-        //Node Info
         NodeInfo node_info;
         fread(&node_info.ip_type, 1, 1, stdin);
         fread(&node_info.ip_address, sizeof node_info.ip_address, 1, stdin);
         fread(&node_info.port, sizeof node_info.port, 1, stdin);
         fread(&node_info.public_key, sizeof node_info.public_key, 1, stdin);
 
-        putchar(1);
-        fwrite(&node_info.ip_type, node_info.ip_type, 1, stdout);
+        putchar(RESULT_TAG_SUCCESS);
+        fwrite(&node_info.ip_type, 1, 1, stdout);
         fwrite(&node_info.ip_address, sizeof node_info.ip_address, 1, stdout);
         fwrite(&node_info.port, sizeof node_info.port, 1, stdout);
         fwrite(&node_info.public_key, sizeof node_info.public_key, 1, stdout);
     }
     else if(!memcmp(test_name, "BinaryDecode NodeInfo", len_of_test_name)){
-        putchar(2);
+        putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, "BinaryEncode Word32", len_of_test_name)){
         //word32
@@ -68,14 +47,14 @@ int main(void)
         fread(&word32, sizeof word32, 1, stdin);
 
         //success tag
-        putchar(1);
+        putchar(RESULT_TAG_SUCCESS);
         fwrite(&word32, sizeof word32, 1, stdout);
-
     }
     else if(!memcmp(test_name, "BinaryDecode Word32", len_of_test_name)){
-        putchar(2);
+        putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, "BinaryEncode String", len_of_test_name)){
+/*
         uint64_t bencode_len_of_list;
         // Reading 64 bit length of list
         fread(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdin);
@@ -83,44 +62,40 @@ int main(void)
         char bencode_string[bencode_len_of_list];
         fread(&bencode_string, bencode_len_of_list, 1, stdin);
 
-        putchar(1);
         bencode_len_of_list = be64toh(bencode_len_of_list);
+        putchar(RESULT_TAG_SUCCESS);
         fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
         fwrite(&bencode_string, sizeof bencode_string, 1, stdout);
+*/
+        putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, "BinaryDecode String", len_of_test_name)){
-        putchar(2);
+        putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, "FailureTest", len_of_test_name)){
-        putchar(2);
+        putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, "SuccessTest", len_of_test_name)){
-        putchar(2);
+        putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, "SkippedTest", len_of_test_name)){
-        putchar(2);
+        putchar(RESULT_TAG_SKIPPED);
     }
     else{
         //error message
         char failure_message[] = "Unhandled test:";
         strncat(failure_message, test_name,strlen(test_name)+1);
 
-        //failure tag \x00
-        putchar(0);
-
+        putchar(RESULT_TAG_FAILURE);
         //prefixed-length of error message
-
         for (int i = 0; i < 7; i++) {
             putchar(0);
         }
-
         //char *prefix_length = "\x00\x00\x00\x00\x00\x00\x00";
         //fwrite(prefix_length, sizeof prefix_length, 1, stdout);
         putchar(strlen(failure_message));
-
         printf("%s", failure_message);
     }
-
     return 0;
 }
 
@@ -151,14 +126,6 @@ void test_distance(void){
     unsigned char origin_key[32];
     unsigned char alice_key[32];
     unsigned char bob_key[32];
-
-    /*
-     * Result types
-     */
-    int failure_tag = 0x00;
-    int success_tag = 0x01;
-    int skipped_tag = 0x02;
-
     /*
      * Ordering values
      */
@@ -180,15 +147,15 @@ void test_distance(void){
      */
     switch (id_closest(origin_key, alice_key, bob_key)) {
     case 0:
-        putchar(success_tag);
+        putchar(RESULT_TAG_SUCCESS);
         putchar(equal_ordering);
         break;
     case 1:
-        putchar(success_tag);
+        putchar(RESULT_TAG_SUCCESS);
         putchar(less_ordering);
         break;
     case 2:
-        putchar(success_tag);
+        putchar(RESULT_TAG_SUCCESS);
         putchar(greater_ordering);
         break;
     }
