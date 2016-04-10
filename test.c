@@ -19,13 +19,13 @@ int main(void)
     else if(!memcmp(test_name, K_BUCKET_INDEX, len_of_test_name)){
         test_kbucket();
     }
-    else if(!memcmp(test_name, "KBucketNodes", len_of_test_name)){
+    else if(!memcmp(test_name, K_BUCKET_NODES, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
     }
-    else if(!memcmp(test_name, "NonceIncrement", len_of_test_name)){
+    else if(!memcmp(test_name, NONCE_INCREMENT, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
     }
-    else if(!memcmp(test_name, "BinaryEncode NodeInfo", len_of_test_name)){
+    else if(!memcmp(test_name, BINARY_ENCODE_NODEINFO, len_of_test_name)){
         NodeInfo node_info;
         fread(&node_info.ip_type, 1, 1, stdin);
         fread(&node_info.ip_address, sizeof node_info.ip_address, 1, stdin);
@@ -38,10 +38,10 @@ int main(void)
         fwrite(&node_info.port, sizeof node_info.port, 1, stdout);
         fwrite(&node_info.public_key, sizeof node_info.public_key, 1, stdout);
     }
-    else if(!memcmp(test_name, "BinaryDecode NodeInfo", len_of_test_name)){
+    else if(!memcmp(test_name, BINARY_DECODE_NODEINFO, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
     }
-    else if(!memcmp(test_name, "BinaryEncode Word32", len_of_test_name)){
+    else if(!memcmp(test_name, BINARY_ENCODE_WORD32, len_of_test_name)){
         //word32
         unsigned int word32;
         fread(&word32, sizeof word32, 1, stdin);
@@ -50,10 +50,10 @@ int main(void)
         putchar(RESULT_TAG_SUCCESS);
         fwrite(&word32, sizeof word32, 1, stdout);
     }
-    else if(!memcmp(test_name, "BinaryDecode Word32", len_of_test_name)){
+    else if(!memcmp(test_name, BINARY_DECODE_WORD32, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
     }
-    else if(!memcmp(test_name, "BinaryEncode String", len_of_test_name)){
+    else if(!memcmp(test_name, BINARY_ENCODE_STRING, len_of_test_name)){
 /*
         uint64_t bencode_len_of_list;
         // Reading 64 bit length of list
@@ -69,16 +69,16 @@ int main(void)
 */
         putchar(RESULT_TAG_SKIPPED);
     }
-    else if(!memcmp(test_name, "BinaryDecode String", len_of_test_name)){
+    else if(!memcmp(test_name, BINARY_DECODE_STRING, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
     }
-    else if(!memcmp(test_name, "FailureTest", len_of_test_name)){
+    else if(!memcmp(test_name, TEST_FAILURE, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
     }
-    else if(!memcmp(test_name, "SuccessTest", len_of_test_name)){
+    else if(!memcmp(test_name, TEST_SUCCESS, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
     }
-    else if(!memcmp(test_name, "SkippedTest", len_of_test_name)){
+    else if(!memcmp(test_name, TEST_SKIPPED, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
     }
     else{

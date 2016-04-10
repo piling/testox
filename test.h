@@ -30,6 +30,7 @@
  * Less:0x00:distance(Origin, Alice) < distance(Origin, Bob)
  * Equal:0x01:the distances are equal
  * Greater:0x02:distance(Origin, Alice) > distance(Origin, Bob).
+ *
  */
 #define DISTANCE "Distance"
 
@@ -53,6 +54,20 @@
  */
 #define K_BUCKET_INDEX "KBucketIndex"
 
+#define K_BUCKET_NODES "KBucketNodes"
+#define NONCE_INCREMENT "NonceIncrement"
+
+#define BINARY_ENCODE_NODEINFO "BinaryEncode NodeInfo"
+#define BINARY_ENCODE_STRING   "BinaryEncode String"
+#define BINARY_ENCODE_WORD32   "BinaryEncode Word32"
+
+#define BINARY_DECODE_NODEINFO "BinaryEncode NodeInfo"
+#define BINARY_DECODE_STRING   "BinaryEncode String"
+#define BINARY_DECODE_WORD32   "BinaryEncode Word32"
+
+#define TEST_FAILURE "Failuretest"
+#define TEST_SUCCESS "SuccessTest"
+#define TEST_SKIPPED "SkippedTest"
 
 /*
  * The Result type is written to stdout. It is a single byte
