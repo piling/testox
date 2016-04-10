@@ -1,4 +1,128 @@
-#include "test.h"
+/***********************test.h**********************/
+#define _DEFAULT_SOURCE
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sodium.h>
+#include "../toxcore/toxcore/DHT.h"
+#include <endian.h>
+
+
+//Test Names
+
+/*
+ * Distance Test
+ *
+ * Checks whether the xor-distance metric works correctly.
+ *
+ * Input:(length:type:contents)
+ * 8:Int:Length of name
+ * 8:Message Kind:Test name: "Distance"
+ * 32:Public Key:Origin key
+ * 32:Public Key:Alice key
+ * 32:Public Key:Bob key
+ *
+ * Output:(lenght:type:contents)
+ * 1:Tag:0x01 (Success)
+ * 1:Ordering:Less, Equal, or Greater
+ *
+ * Ordering:(value:encoding:when)
+ * Less:0x00:distance(Origin, Alice) < distance(Origin, Bob)
+ * Equal:0x01:the distances are equal
+ * Greater:0x02:distance(Origin, Alice) > distance(Origin, Bob).
+ *
+ */
+#define DISTANCE                 "Distance"
+
+/*
+ * K-Bucket Index Test
+ *
+ * Checks whether the K-bucket index is computed correctly.
+ *
+ * Input: Two public keys for Self and Other. (length:type:contents)
+ * 8:Int:Length of name
+ * 12:Message Kind:Test name: "KBucketIndex"
+ * 32:Public Key:Base key
+ * 32:Public Key:Node key
+ *
+ * Output: either Nothing or Just i in a Success(success tag + payload) message.
+ * 1:0x00:Base key == Node key: Nothing
+ * 2:0x01, i:otherwise: Just i
+ * The value of i is the k-bucket index of the Node key in a k-buckets
+ * instance with the given Base key.
+ *
+ */
+#define K_BUCKET_INDEX           "KBucketIndex"
+
+#define K_BUCKET_NODES           "KBucketNodes"
+#define NONCE_INCREMENT          "NonceIncrement"
+
+#define BINARY_ENCODE_NODEINFO   "BinaryEncode NodeInfo"
+#define BINARY_ENCODE_STRING     "BinaryEncode String"
+#define BINARY_ENCODE_BYTESTRING "BinaryEncode ByteString"
+#define BINARY_ENCODE_WORD32     "BinaryEncode Word32"
+
+#define BINARY_DECODE_NODEINFO   "BinaryDecode NodeInfo"
+#define BINARY_DECODE_STRING     "BinaryDecode String"
+#define BINARY_DECODE_WORD32     "BinaryDecode Word32"
+
+#define TEST_FAILURE             "Failuretest"
+#define TEST_SUCCESS             "SuccessTest"
+#define TEST_SKIPPED             "SkippedTest"
+
+/*
+ * The Result type is written to stdout. It is a single byte
+ * for Failure (0x00), Success (0x01), and Skipped (0x02),
+ * followed by the result data.
+ * more; https://toktok.github.io/spec#result
+ *
+ */
+
+#define RESULT_TAG_FAILURE       0x00
+#define RESULT_TAG_SUCCESS       0x01
+#define RESULT_TAG_SKIPPED       0x02
+
+/*
+ * Packed Node Format
+ *
+ * MSB bit transport protocol -> UDP=0, TCP=1
+ * LSB 7 bit address family -> IPv4=4, IPv6=10
+ * 4|16 bytes ip address -> IPv4=4, IPv6=16
+ * 2 bytes port number
+ * 32 bytes public key -> Node ID
+ *
+ * The following table is can be used to simplify the implementation.
+ * (ip type:transport protocol:address family)
+ * 2 (0x02):UDP:IPv4
+ * 10 (0x0a):UDP:IPv6
+ * 130 (0x82):TCP:IPv4
+ * 138 (0x8a):TCP:IPv6
+ *
+ * more; https://toktok.github.io/spec#node-info-packed-node-format
+ *
+ */
+
+typedef struct{
+    int ip_type;
+    unsigned char ip_address[16];
+    uint16_t port_number;
+    unsigned char public_key[32];
+}CNodeInfo;
+
+typedef struct{
+    int is_tcp;
+    int is_ipv6;
+    unsigned char ip_address[16];
+    uint16_t port_number;
+    unsigned char public_key[32];
+}DNodeInfo;
+
+
+
+void test_kbucket(void);
+void test_distance(void);
+/***************************test.h************************/
 
 int main(void)
 {
@@ -26,17 +150,36 @@ int main(void)
         putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, BINARY_ENCODE_NODEINFO, len_of_test_name)){
-        NodeInfo node_info;
-        fread(&node_info.ip_type, 1, 1, stdin);
-        fread(&node_info.ip_address, sizeof node_info.ip_address, 1, stdin);
-        fread(&node_info.port, sizeof node_info.port, 1, stdin);
-        fread(&node_info.public_key, sizeof node_info.public_key, 1, stdin);
+        int udp_ipv4 = 0x02;
+        int udp_ipv6 = 0x0a;
+        int tcp_ipv4 = 0x82;
+        int tcp_ipv6 = 0x8a;
+
+        DNodeInfo d_node_info;
+
+        fread(&d_node_info.is_tcp, 1, 1, stdin);
+        fread(&d_node_info.is_ipv6, 1, 1, stdin);
+        fprintf(stderr, "%d\n", d_node_info.is_ipv6);
+        if(d_node_info.is_ipv6)
+            fread(&d_node_info.ip_address, sizeof d_node_info.ip_address, 1, stdin);
+        else
+            fread(&d_node_info.ip_address, 4, 1, stdin);
+        fread(&d_node_info.port_number, sizeof d_node_info.port_number, 1, stdin);
+        fread(&d_node_info.public_key, sizeof d_node_info.public_key, 1, stdin);
+
 
         putchar(RESULT_TAG_SUCCESS);
-        fwrite(&node_info.ip_type, 1, 1, stdout);
-        fwrite(&node_info.ip_address, sizeof node_info.ip_address, 1, stdout);
-        fwrite(&node_info.port, sizeof node_info.port, 1, stdout);
-        fwrite(&node_info.public_key, sizeof node_info.public_key, 1, stdout);
+        if(!d_node_info.is_tcp && !d_node_info.is_ipv6)
+            putchar(udp_ipv4);
+        else if(!d_node_info.is_tcp && d_node_info.is_ipv6)
+            putchar(udp_ipv6);
+        else if(d_node_info.is_tcp && !d_node_info.is_ipv6)
+            putchar(tcp_ipv4);
+        else if(d_node_info.is_tcp && d_node_info.is_ipv6)
+            putchar(tcp_ipv6);
+        fwrite(&d_node_info.ip_address, sizeof d_node_info.ip_address, 1, stdout);
+        fwrite(&d_node_info.port_number, sizeof d_node_info.port_number, 1, stdout);
+        fwrite(&d_node_info.public_key, sizeof d_node_info.public_key, 1, stdout);
     }
     else if(!memcmp(test_name, BINARY_DECODE_NODEINFO, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
@@ -71,6 +214,19 @@ int main(void)
     }
     else if(!memcmp(test_name, BINARY_DECODE_STRING, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
+    }
+    else if(!memcmp(test_name, BINARY_ENCODE_BYTESTRING, len_of_test_name)){
+        uint64_t bencode_len_of_list;
+        // Reading 64 bit length of list
+        fread(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdin);
+        bencode_len_of_list = htobe64(bencode_len_of_list);
+        char bencode_bytestring[bencode_len_of_list];
+        fread(&bencode_bytestring, bencode_len_of_list, 1, stdin);
+
+        bencode_len_of_list = be64toh(bencode_len_of_list);
+        putchar(RESULT_TAG_SUCCESS);
+        fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
+        fwrite(&bencode_bytestring, sizeof bencode_bytestring, 1, stdout);
     }
     else if(!memcmp(test_name, TEST_FAILURE, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);

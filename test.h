@@ -32,7 +32,7 @@
  * Greater:0x02:distance(Origin, Alice) > distance(Origin, Bob).
  *
  */
-#define DISTANCE "Distance"
+#define DISTANCE                 "Distance"
 
 /*
  * K-Bucket Index Test
@@ -52,22 +52,23 @@
  * instance with the given Base key.
  *
  */
-#define K_BUCKET_INDEX "KBucketIndex"
+#define K_BUCKET_INDEX           "KBucketIndex"
 
-#define K_BUCKET_NODES "KBucketNodes"
-#define NONCE_INCREMENT "NonceIncrement"
+#define K_BUCKET_NODES           "KBucketNodes"
+#define NONCE_INCREMENT          "NonceIncrement"
 
-#define BINARY_ENCODE_NODEINFO "BinaryEncode NodeInfo"
-#define BINARY_ENCODE_STRING   "BinaryEncode String"
-#define BINARY_ENCODE_WORD32   "BinaryEncode Word32"
+#define BINARY_ENCODE_NODEINFO   "BinaryEncode NodeInfo"
+#define BINARY_ENCODE_STRING     "BinaryEncode String"
+#define BINARY_ENCODE_BYTESTRING "BinaryEncode ByteString"
+#define BINARY_ENCODE_WORD32     "BinaryEncode Word32"
 
-#define BINARY_DECODE_NODEINFO "BinaryEncode NodeInfo"
-#define BINARY_DECODE_STRING   "BinaryEncode String"
-#define BINARY_DECODE_WORD32   "BinaryEncode Word32"
+#define BINARY_DECODE_NODEINFO   "BinaryDecode NodeInfo"
+#define BINARY_DECODE_STRING     "BinaryDecode String"
+#define BINARY_DECODE_WORD32     "BinaryDecode Word32"
 
-#define TEST_FAILURE "Failuretest"
-#define TEST_SUCCESS "SuccessTest"
-#define TEST_SKIPPED "SkippedTest"
+#define TEST_FAILURE             "Failuretest"
+#define TEST_SUCCESS             "SuccessTest"
+#define TEST_SKIPPED             "SkippedTest"
 
 /*
  * The Result type is written to stdout. It is a single byte
@@ -77,9 +78,9 @@
  *
  */
 
-#define RESULT_TAG_FAILURE 0x00
-#define RESULT_TAG_SUCCESS 0x01
-#define RESULT_TAG_SKIPPED 0x02
+#define RESULT_TAG_FAILURE       0x00
+#define RESULT_TAG_SUCCESS       0x01
+#define RESULT_TAG_SKIPPED       0x02
 
 /*
  * Packed Node Format
@@ -100,12 +101,21 @@
  * more; https://toktok.github.io/spec#node-info-packed-node-format
  *
  */
+
 typedef struct{
     int ip_type;
     unsigned char ip_address[16];
-    unsigned char port[2];
+    uint16_t port_number;
     unsigned char public_key[32];
-}NodeInfo;
+}CNodeInfo;
+
+typedef struct{
+    int is_tcp;
+    int is_ipv6;
+    unsigned char ip_address[16];
+    uint16_t port_number;
+    unsigned char public_key[32];
+}DNodeInfo;
 
 
 
