@@ -110,8 +110,8 @@ typedef struct{
 }CNodeInfo;
 
 typedef struct{
-    int is_tcp;
-    int is_ipv6;
+    char is_tcp;
+    char is_ipv6;
     unsigned char ip_address[16];
     uint16_t port_number;
     unsigned char public_key[32];

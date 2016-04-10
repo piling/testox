@@ -111,8 +111,8 @@ typedef struct{
 }CNodeInfo;
 
 typedef struct{
-    int is_tcp;
-    int is_ipv6;
+    char is_tcp;
+    char is_ipv6;
     unsigned char ip_address[16];
     uint16_t port_number;
     unsigned char public_key[32];
@@ -150,16 +150,15 @@ int main(void)
         putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, BINARY_ENCODE_NODEINFO, len_of_test_name)){
-        int udp_ipv4 = 0x02;
-        int udp_ipv6 = 0x0a;
-        int tcp_ipv4 = 0x82;
-        int tcp_ipv6 = 0x8a;
+        char udp_ipv4 = 0x02;
+        char udp_ipv6 = 0x0a;
+        char tcp_ipv4 = 0x82;
+        char tcp_ipv6 = 0x8a;
 
         DNodeInfo d_node_info;
 
         fread(&d_node_info.is_tcp, 1, 1, stdin);
         fread(&d_node_info.is_ipv6, 1, 1, stdin);
-        fprintf(stderr, "%d\n", d_node_info.is_ipv6);
         if(d_node_info.is_ipv6)
             fread(&d_node_info.ip_address, sizeof d_node_info.ip_address, 1, stdin);
         else
@@ -167,7 +166,7 @@ int main(void)
         fread(&d_node_info.port_number, sizeof d_node_info.port_number, 1, stdin);
         fread(&d_node_info.public_key, sizeof d_node_info.public_key, 1, stdin);
 
-
+        fprintf(stderr, "%d", d_node_info.port_number);
         putchar(RESULT_TAG_SUCCESS);
         if(!d_node_info.is_tcp && !d_node_info.is_ipv6)
             putchar(udp_ipv4);
@@ -177,7 +176,11 @@ int main(void)
             putchar(tcp_ipv4);
         else if(d_node_info.is_tcp && d_node_info.is_ipv6)
             putchar(tcp_ipv6);
-        fwrite(&d_node_info.ip_address, sizeof d_node_info.ip_address, 1, stdout);
+
+        if(d_node_info.is_ipv6)
+            fwrite(&d_node_info.ip_address, sizeof d_node_info.ip_address, 1, stdout);
+        else
+            fwrite(&d_node_info.ip_address, 4, 1, stdout);
         fwrite(&d_node_info.port_number, sizeof d_node_info.port_number, 1, stdout);
         fwrite(&d_node_info.public_key, sizeof d_node_info.public_key, 1, stdout);
     }
