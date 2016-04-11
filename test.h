@@ -103,7 +103,7 @@
  */
 
 typedef struct{
-    int ip_type;
+    char ip_type;
     unsigned char ip_address[16];
     uint16_t port_number;
     unsigned char public_key[32];

@@ -104,7 +104,7 @@
  */
 
 typedef struct{
-    int ip_type;
+    char ip_type;
     unsigned char ip_address[16];
     uint16_t port_number;
     unsigned char public_key[32];
@@ -156,7 +156,6 @@ int main(void)
         char tcp_ipv6 = 0x8a;
 
         DNodeInfo d_node_info;
-
         fread(&d_node_info.is_tcp, 1, 1, stdin);
         fread(&d_node_info.is_ipv6, 1, 1, stdin);
         if(d_node_info.is_ipv6)
@@ -166,7 +165,32 @@ int main(void)
         fread(&d_node_info.port_number, sizeof d_node_info.port_number, 1, stdin);
         fread(&d_node_info.public_key, sizeof d_node_info.public_key, 1, stdin);
 
-        fprintf(stderr, "%d", d_node_info.port_number);
+        IP ip;
+        IP_Port ip_port;
+        Node_format node;
+        Node_format nodes[1];
+
+        if(d_node_info.is_ipv6){
+            ip_init(&ip, 1);
+            struct in6_addr ipv6addr;
+            inet_pton(AF_INET6, d_node_info.ip_address, &ipv6addr);
+            ip.ip6.in6_addr = ipv6addr;
+        }else{
+            ip_init(&ip, 0);
+            struct in_addr ipv4addr;
+            inet_pton(AF_INET, d_node_info.ip_address, &ipv4addr);
+            ip.ip4.in_addr = ipv4addr;
+        }
+        ip_port.ip = ip;
+        ip_port.port = d_node_info.port_number;
+        node.ip_port = ip_port;
+        memcpy(node.public_key, d_node_info.public_key, crypto_box_PUBLICKEYBYTES);
+        nodes[0] = node;
+
+        uint8_t *data;
+        int len = pack_nodes(data, sizeof data, nodes, 1);
+        fprintf(stderr, "%d\n", len);
+/*
         putchar(RESULT_TAG_SUCCESS);
         if(!d_node_info.is_tcp && !d_node_info.is_ipv6)
             putchar(udp_ipv4);
@@ -183,6 +207,7 @@ int main(void)
             fwrite(&d_node_info.ip_address, 4, 1, stdout);
         fwrite(&d_node_info.port_number, sizeof d_node_info.port_number, 1, stdout);
         fwrite(&d_node_info.public_key, sizeof d_node_info.public_key, 1, stdout);
+*/
     }
     else if(!memcmp(test_name, BINARY_DECODE_NODEINFO, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
