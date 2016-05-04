@@ -185,25 +185,36 @@ int main(void)
         fwrite(&d_node_info.port_number, sizeof d_node_info.port_number, 1, stdout);
         fwrite(&d_node_info.public_key, sizeof d_node_info.public_key, 1, stdout);
 */
+
         IP ip;
-        if((!d_node_info.is_tcp && !d_node_info.is_ipv6) || (d_node_info.is_tcp && !d_node_info.is_ipv6)){
-            ip.family = AF_INET;
-            inet_pton(AF_INET, d_node_info.ip_address, &ip.ip4.in_addr);
+        if(!d_node_info.is_tcp && !d_node_info.is_ipv6){
+            ip.family = AF_INET; // udp_ipv4;
+            memcpy(&ip.ip4.in_addr, d_node_info.ip_address, sizeof d_node_info.ip_address);
         }
-        else{
-            ip.family = AF_INET6;
-            inet_pton(AF_INET6, d_node_info.ip_address, &ip.ip6.in6_addr);
+        else if(!d_node_info.is_tcp && d_node_info.is_ipv6){
+            ip.family = AF_INET6; // udp_ipv6;
+            memcpy(&ip.ip6.in6_addr, d_node_info.ip_address, sizeof d_node_info.ip_address);
         }
+        else if(d_node_info.is_tcp && !d_node_info.is_ipv6){
+            ip.family = TCP_INET; // tcp_ipv4;
+            memcpy(&ip.ip4.in_addr, d_node_info.ip_address, sizeof d_node_info.ip_address);
+        }
+        else if(d_node_info.is_tcp && d_node_info.is_ipv6){
+            ip.family = TCP_INET6; // tcp_ipv6;
+            memcpy(&ip.ip6.in6_addr, d_node_info.ip_address, sizeof d_node_info.ip_address);
+        }
+
 
         IP_Port ip_port;
         ip_port.ip = ip;
         ip_port.port = d_node_info.port_number;
 
-        Node_format *nodes;
+        Node_format nodes[1];
         memcpy(nodes[0].public_key, &d_node_info.public_key, sizeof d_node_info.public_key);
-
-        uint8_t data[1024]; // is this should be equal to nodes size ?
-        pack_nodes(data, sizeof data, nodes, 1);
+        nodes[0].ip_port = ip_port;
+        uint8_t data[sizeof nodes]; // is this should be equal to nodes size ?
+        int len = pack_nodes(data, sizeof data, nodes, 1);
+        fprintf(stderr, "%d\n", len);
         fwrite(data, sizeof data, 1, stdout);
     }
     else if(!memcmp(test_name, BINARY_DECODE_NODEINFO, len_of_test_name)){
