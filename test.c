@@ -150,6 +150,7 @@ int main(void)
         putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, BINARY_ENCODE_NODEINFO, len_of_test_name)){
+
         char udp_ipv4 = 0x02;
         char udp_ipv6 = 0x0a;
         char tcp_ipv4 = 0x82;
@@ -165,32 +166,7 @@ int main(void)
         fread(&d_node_info.port_number, sizeof d_node_info.port_number, 1, stdin);
         fread(&d_node_info.public_key, sizeof d_node_info.public_key, 1, stdin);
 
-        IP ip;
-        IP_Port ip_port;
-        Node_format node;
-        Node_format nodes[1];
 
-        if(d_node_info.is_ipv6){
-            ip_init(&ip, 1);
-            struct in6_addr ipv6addr;
-            inet_pton(AF_INET6, d_node_info.ip_address, &ipv6addr);
-            ip.ip6.in6_addr = ipv6addr;
-        }else{
-            ip_init(&ip, 0);
-            struct in_addr ipv4addr;
-            inet_pton(AF_INET, d_node_info.ip_address, &ipv4addr);
-            ip.ip4.in_addr = ipv4addr;
-        }
-        ip_port.ip = ip;
-        ip_port.port = d_node_info.port_number;
-        node.ip_port = ip_port;
-        memcpy(node.public_key, d_node_info.public_key, crypto_box_PUBLICKEYBYTES);
-        nodes[0] = node;
-
-        uint8_t *data;
-        int len = pack_nodes(data, sizeof data, nodes, 1);
-        fprintf(stderr, "%d\n", len);
-/*
         putchar(RESULT_TAG_SUCCESS);
         if(!d_node_info.is_tcp && !d_node_info.is_ipv6)
             putchar(udp_ipv4);
@@ -207,7 +183,7 @@ int main(void)
             fwrite(&d_node_info.ip_address, 4, 1, stdout);
         fwrite(&d_node_info.port_number, sizeof d_node_info.port_number, 1, stdout);
         fwrite(&d_node_info.public_key, sizeof d_node_info.public_key, 1, stdout);
-*/
+
     }
     else if(!memcmp(test_name, BINARY_DECODE_NODEINFO, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
@@ -225,7 +201,7 @@ int main(void)
         putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, BINARY_ENCODE_STRING, len_of_test_name)){
-/*
+
         uint64_t bencode_len_of_list;
         // Reading 64 bit length of list
         fread(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdin);
@@ -237,8 +213,7 @@ int main(void)
         putchar(RESULT_TAG_SUCCESS);
         fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
         fwrite(&bencode_string, sizeof bencode_string, 1, stdout);
-*/
-        putchar(RESULT_TAG_SKIPPED);
+
     }
     else if(!memcmp(test_name, BINARY_DECODE_STRING, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
