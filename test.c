@@ -168,6 +168,7 @@ int main(void)
 
 
         putchar(RESULT_TAG_SUCCESS);
+/*
         if(!d_node_info.is_tcp && !d_node_info.is_ipv6)
             putchar(udp_ipv4);
         else if(!d_node_info.is_tcp && d_node_info.is_ipv6)
@@ -183,7 +184,27 @@ int main(void)
             fwrite(&d_node_info.ip_address, 4, 1, stdout);
         fwrite(&d_node_info.port_number, sizeof d_node_info.port_number, 1, stdout);
         fwrite(&d_node_info.public_key, sizeof d_node_info.public_key, 1, stdout);
+*/
+        IP ip;
+        if((!d_node_info.is_tcp && !d_node_info.is_ipv6) || (d_node_info.is_tcp && !d_node_info.is_ipv6)){
+            ip.family = AF_INET;
+            inet_pton(AF_INET, d_node_info.ip_address, &ip.ip4.in_addr);
+        }
+        else{
+            ip.family = AF_INET6;
+            inet_pton(AF_INET6, d_node_info.ip_address, &ip.ip6.in6_addr);
+        }
 
+        IP_Port ip_port;
+        ip_port.ip = ip;
+        ip_port.port = d_node_info.port_number;
+
+        Node_format *nodes;
+        memcpy(nodes[0].public_key, &d_node_info.public_key, sizeof d_node_info.public_key);
+
+        uint8_t data[1024]; // is this should be equal to nodes size ?
+        pack_nodes(data, sizeof data, nodes, 1);
+        fwrite(data, sizeof data, 1, stdout);
     }
     else if(!memcmp(test_name, BINARY_DECODE_NODEINFO, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
@@ -201,7 +222,7 @@ int main(void)
         putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, BINARY_ENCODE_STRING, len_of_test_name)){
-
+/*
         uint64_t bencode_len_of_list;
         // Reading 64 bit length of list
         fread(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdin);
@@ -213,7 +234,8 @@ int main(void)
         putchar(RESULT_TAG_SUCCESS);
         fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
         fwrite(&bencode_string, sizeof bencode_string, 1, stdout);
-
+*/
+        putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, BINARY_DECODE_STRING, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
