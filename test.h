@@ -82,42 +82,6 @@
 #define RESULT_TAG_SUCCESS       0x01
 #define RESULT_TAG_SKIPPED       0x02
 
-/*
- * Packed Node Format
- *
- * MSB bit transport protocol -> UDP=0, TCP=1
- * LSB 7 bit address family -> IPv4=4, IPv6=10
- * 4|16 bytes ip address -> IPv4=4, IPv6=16
- * 2 bytes port number
- * 32 bytes public key -> Node ID
- *
- * The following table is can be used to simplify the implementation.
- * (ip type:transport protocol:address family)
- * 2 (0x02):UDP:IPv4
- * 10 (0x0a):UDP:IPv6
- * 130 (0x82):TCP:IPv4
- * 138 (0x8a):TCP:IPv6
- *
- * more; https://toktok.github.io/spec#node-info-packed-node-format
- *
- */
-
-typedef struct{
-    char ip_type;
-    unsigned char ip_address[16];
-    uint16_t port_number;
-    unsigned char public_key[32];
-}CNodeInfo;
-
-typedef struct{
-    char is_tcp;
-    char is_ipv6;
-    unsigned char ip_address[16];
-    uint16_t port_number;
-    unsigned char public_key[32];
-}DNodeInfo;
-
-
-
 void test_kbucket(void);
 void test_distance(void);
+void binary_encode_nodeinfo(void);

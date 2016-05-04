@@ -83,45 +83,10 @@
 #define RESULT_TAG_SUCCESS       0x01
 #define RESULT_TAG_SKIPPED       0x02
 
-/*
- * Packed Node Format
- *
- * MSB bit transport protocol -> UDP=0, TCP=1
- * LSB 7 bit address family -> IPv4=4, IPv6=10
- * 4|16 bytes ip address -> IPv4=4, IPv6=16
- * 2 bytes port number
- * 32 bytes public key -> Node ID
- *
- * The following table is can be used to simplify the implementation.
- * (ip type:transport protocol:address family)
- * 2 (0x02):UDP:IPv4
- * 10 (0x0a):UDP:IPv6
- * 130 (0x82):TCP:IPv4
- * 138 (0x8a):TCP:IPv6
- *
- * more; https://toktok.github.io/spec#node-info-packed-node-format
- *
- */
-
-typedef struct{
-    char ip_type;
-    unsigned char ip_address[16];
-    uint16_t port_number;
-    unsigned char public_key[32];
-}CNodeInfo;
-
-typedef struct{
-    char is_tcp;
-    char is_ipv6;
-    unsigned char ip_address[16];
-    uint16_t port_number;
-    unsigned char public_key[32];
-}DNodeInfo;
-
-
 
 void test_kbucket(void);
 void test_distance(void);
+void binary_encode_nodeinfo(void);
 /***************************test.h************************/
 
 int main(void)
@@ -150,72 +115,7 @@ int main(void)
         putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, BINARY_ENCODE_NODEINFO, len_of_test_name)){
-
-        char udp_ipv4 = 0x02;
-        char udp_ipv6 = 0x0a;
-        char tcp_ipv4 = 0x82;
-        char tcp_ipv6 = 0x8a;
-
-        DNodeInfo d_node_info;
-        fread(&d_node_info.is_tcp, 1, 1, stdin);
-        fread(&d_node_info.is_ipv6, 1, 1, stdin);
-        if(d_node_info.is_ipv6)
-            fread(&d_node_info.ip_address, sizeof d_node_info.ip_address, 1, stdin);
-        else
-            fread(&d_node_info.ip_address, 4, 1, stdin);
-        fread(&d_node_info.port_number, sizeof d_node_info.port_number, 1, stdin);
-        fread(&d_node_info.public_key, sizeof d_node_info.public_key, 1, stdin);
-
-
-        putchar(RESULT_TAG_SUCCESS);
-/*
-        if(!d_node_info.is_tcp && !d_node_info.is_ipv6)
-            putchar(udp_ipv4);
-        else if(!d_node_info.is_tcp && d_node_info.is_ipv6)
-            putchar(udp_ipv6);
-        else if(d_node_info.is_tcp && !d_node_info.is_ipv6)
-            putchar(tcp_ipv4);
-        else if(d_node_info.is_tcp && d_node_info.is_ipv6)
-            putchar(tcp_ipv6);
-
-        if(d_node_info.is_ipv6)
-            fwrite(&d_node_info.ip_address, sizeof d_node_info.ip_address, 1, stdout);
-        else
-            fwrite(&d_node_info.ip_address, 4, 1, stdout);
-        fwrite(&d_node_info.port_number, sizeof d_node_info.port_number, 1, stdout);
-        fwrite(&d_node_info.public_key, sizeof d_node_info.public_key, 1, stdout);
-*/
-
-        IP ip;
-        if(!d_node_info.is_tcp && !d_node_info.is_ipv6){
-            ip.family = AF_INET; // udp_ipv4;
-            memcpy(&ip.ip4.in_addr, d_node_info.ip_address, sizeof d_node_info.ip_address);
-        }
-        else if(!d_node_info.is_tcp && d_node_info.is_ipv6){
-            ip.family = AF_INET6; // udp_ipv6;
-            memcpy(&ip.ip6.in6_addr, d_node_info.ip_address, sizeof d_node_info.ip_address);
-        }
-        else if(d_node_info.is_tcp && !d_node_info.is_ipv6){
-            ip.family = TCP_INET; // tcp_ipv4;
-            memcpy(&ip.ip4.in_addr, d_node_info.ip_address, sizeof d_node_info.ip_address);
-        }
-        else if(d_node_info.is_tcp && d_node_info.is_ipv6){
-            ip.family = TCP_INET6; // tcp_ipv6;
-            memcpy(&ip.ip6.in6_addr, d_node_info.ip_address, sizeof d_node_info.ip_address);
-        }
-
-
-        IP_Port ip_port;
-        ip_port.ip = ip;
-        ip_port.port = d_node_info.port_number;
-
-        Node_format nodes[1];
-        memcpy(nodes[0].public_key, &d_node_info.public_key, sizeof d_node_info.public_key);
-        nodes[0].ip_port = ip_port;
-        uint8_t data[sizeof nodes]; // is this should be equal to nodes size ?
-        int len = pack_nodes(data, sizeof data, nodes, 1);
-        fprintf(stderr, "%d\n", len);
-        fwrite(data, sizeof data, 1, stdout);
+        binary_encode_nodeinfo();
     }
     else if(!memcmp(test_name, BINARY_DECODE_NODEINFO, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
@@ -351,4 +251,36 @@ void test_distance(void){
         putchar(greater_ordering);
         break;
     }
+}
+
+void binary_encode_nodeinfo(void){
+    Node_format nodes[1];
+    char is_tcp;
+    char is_ipv6;
+    fread(&is_tcp, 1, 1, stdin);
+    fread(&is_ipv6, 1, 1, stdin);
+    if(is_ipv6){
+        fread(&nodes[0].ip_port.ip.ip6, 16, 1, stdin);
+        if(is_tcp)
+            nodes[0].ip_port.ip.family = TCP_INET6;
+        else
+            nodes[0].ip_port.ip.family = AF_INET6;
+    }
+    else{
+        fread(&nodes[0].ip_port.ip.ip4, 4, 1, stdin);
+        if(is_tcp)
+            nodes[0].ip_port.ip.family = TCP_INET;
+        else
+            nodes[0].ip_port.ip.family = AF_INET;
+    }
+    fread(&nodes[0].ip_port.port, 2, 1, stdin);
+    fread(&nodes[0].public_key, 32, 1, stdin);
+
+    putchar(RESULT_TAG_SUCCESS);
+    int size = !is_ipv6
+        ? SIZE_IP4 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1
+        : SIZE_IP6 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1;
+    uint8_t data[size];
+    pack_nodes(data, sizeof data, nodes, 1);
+    fwrite(data, sizeof data, 1, stdout);
 }
