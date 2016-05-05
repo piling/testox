@@ -87,6 +87,8 @@
 void test_kbucket(void);
 void test_distance(void);
 void binary_encode_nodeinfo(void);
+void binary_encode_word32(void);
+void binary_encode_bytestring(void);
 /***************************test.h************************/
 
 int main(void)
@@ -118,16 +120,67 @@ int main(void)
         binary_encode_nodeinfo();
     }
     else if(!memcmp(test_name, BINARY_DECODE_NODEINFO, len_of_test_name)){
-        putchar(RESULT_TAG_SKIPPED);
+        Node_format nodes[1];
+        Node_format buf[1];
+        uint16_t processed_data_len = 0;
+        int size;
+        uint8_t tcp_enabled;
+        int ipv6 = -1;
+
+        fread(&buf[0].ip_port.ip.family, 1, 1, stdin);
+        //fprintf(stderr, "%s\n", buf[0].ip_port.ip.family);
+        switch (buf[0].ip_port.ip.family) {
+        case TOX_AF_INET: {
+            fread(&buf[0].ip_port.ip.ip4, 4, 1, stdin);
+            size = SIZE_IP4 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1;
+            tcp_enabled = 0x00;
+            ipv6 = 0;
+            break;
+        }
+        case TOX_AF_INET6:{
+            fread(&buf[0].ip_port.ip.ip6, 16, 1, stdin);
+            size = SIZE_IP6 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1;
+            tcp_enabled = 0x00;
+            ipv6 = 1;
+            break;
+        }
+        case TOX_TCP_INET:{
+            fread(&buf[0].ip_port.ip.ip4, 4, 1, stdin);
+            size = SIZE_IP4 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1;
+            tcp_enabled = 0x01;
+            ipv6 = 0;
+            break;
+        }
+        case TOX_TCP_INET6:{
+            fread(&buf[0].ip_port.ip.ip6, 16, 1, stdin);
+            size = SIZE_IP6 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1;
+            tcp_enabled = 0x01;
+            ipv6 = 1;
+            break;
+        }
+        }
+        fread(&buf[0].ip_port.port, 2, 1, stdin);
+        fread(&buf[0].public_key, 32, 1, stdin);
+
+        uint8_t data[size];
+        if(ipv6){
+            data[0] = buf[0].ip_port.ip.family;
+            memcpy(data + 1, &buf[0].ip_port.ip.ip6, SIZE_IP6);
+            memcpy(data + 1 + SIZE_IP6, &buf[0].ip_port.port, sizeof(uint16_t));
+            memcpy(data + 1 + SIZE_IP6 + sizeof(uint16_t), buf[0].public_key, crypto_box_PUBLICKEYBYTES);
+        }else{
+            data[0] = buf[0].ip_port.ip.family;
+            memcpy(data + 1, &buf[0].ip_port.ip.ip4, SIZE_IP4);
+            memcpy(data + 1 + SIZE_IP4, &buf[0].ip_port.port, sizeof(uint16_t));
+            memcpy(data + 1 + SIZE_IP4 + sizeof(uint16_t), buf[0].public_key, crypto_box_PUBLICKEYBYTES);
+        }
+        unpack_nodes(nodes, 1, &processed_data_len, data, sizeof data, tcp_enabled);
+
+        putchar(RESULT_TAG_SUCCESS);
+        fwrite(data, sizeof data, 1, stdout);
     }
     else if(!memcmp(test_name, BINARY_ENCODE_WORD32, len_of_test_name)){
-        //word32
-        unsigned int word32;
-        fread(&word32, sizeof word32, 1, stdin);
-
-        //success tag
-        putchar(RESULT_TAG_SUCCESS);
-        fwrite(&word32, sizeof word32, 1, stdout);
+        binary_encode_word32();
     }
     else if(!memcmp(test_name, BINARY_DECODE_WORD32, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
@@ -146,23 +199,14 @@ int main(void)
         fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
         fwrite(&bencode_string, sizeof bencode_string, 1, stdout);
 */
+
         putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, BINARY_DECODE_STRING, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, BINARY_ENCODE_BYTESTRING, len_of_test_name)){
-        uint64_t bencode_len_of_list;
-        // Reading 64 bit length of list
-        fread(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdin);
-        bencode_len_of_list = htobe64(bencode_len_of_list);
-        char bencode_bytestring[bencode_len_of_list];
-        fread(&bencode_bytestring, bencode_len_of_list, 1, stdin);
-
-        bencode_len_of_list = be64toh(bencode_len_of_list);
-        putchar(RESULT_TAG_SUCCESS);
-        fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
-        fwrite(&bencode_bytestring, sizeof bencode_bytestring, 1, stdout);
+        binary_encode_bytestring();
     }
     else if(!memcmp(test_name, TEST_FAILURE, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
@@ -276,11 +320,35 @@ void binary_encode_nodeinfo(void){
     fread(&nodes[0].ip_port.port, 2, 1, stdin);
     fread(&nodes[0].public_key, 32, 1, stdin);
 
-    putchar(RESULT_TAG_SUCCESS);
     int size = !is_ipv6
         ? SIZE_IP4 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1
         : SIZE_IP6 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1;
     uint8_t data[size];
     pack_nodes(data, sizeof data, nodes, 1);
+    putchar(RESULT_TAG_SUCCESS);
     fwrite(data, sizeof data, 1, stdout);
+}
+
+void binary_encode_word32(void){
+    //word32
+    unsigned int word32;
+    fread(&word32, sizeof word32, 1, stdin);
+
+    //success tag
+    putchar(RESULT_TAG_SUCCESS);
+    fwrite(&word32, sizeof word32, 1, stdout);
+}
+
+void binary_encode_bytestring(void){
+    uint64_t bencode_len_of_list;
+    // Reading 64 bit length of list
+    fread(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdin);
+    bencode_len_of_list = htobe64(bencode_len_of_list);
+    char bencode_bytestring[bencode_len_of_list];
+    fread(&bencode_bytestring, bencode_len_of_list, 1, stdin);
+
+    bencode_len_of_list = be64toh(bencode_len_of_list);
+    putchar(RESULT_TAG_SUCCESS);
+    fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
+    fwrite(&bencode_bytestring, sizeof bencode_bytestring, 1, stdout);
 }

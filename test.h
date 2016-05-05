@@ -85,3 +85,5 @@
 void test_kbucket(void);
 void test_distance(void);
 void binary_encode_nodeinfo(void);
+void binary_encode_word32(void);
+void binary_encode_bytestring(void);
