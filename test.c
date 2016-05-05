@@ -89,6 +89,7 @@ void test_distance(void);
 void binary_encode_nodeinfo(void);
 void binary_encode_word32(void);
 void binary_encode_bytestring(void);
+void binary_decode_nodeinfo(void);
 /***************************test.h************************/
 
 int main(void)
@@ -120,53 +121,7 @@ int main(void)
         binary_encode_nodeinfo();
     }
     else if(!memcmp(test_name, BINARY_DECODE_NODEINFO, len_of_test_name)){
-        Node_format nodes[1];
-        Node_format buf[1];
-        uint16_t processed_data_len = 0;
-        int size;
-        uint8_t tcp_enabled;
-        uint8_t net_family;
-        fread(&net_family, 1, 1, stdin);
-        //fprintf(stderr, "%s\n", buf[0].ip_port.ip.family);
-        switch (net_family) {
-        case TOX_AF_INET: {
-            fread(&buf[0].ip_port.ip.ip4, 4, 1, stdin);
-            buf[0].ip_port.ip.family =  AF_INET;
-            size = SIZE_IP4 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1;
-            tcp_enabled = 0x00;
-            break;
-        }
-        case TOX_AF_INET6:{
-            fread(&buf[0].ip_port.ip.ip6, 16, 1, stdin);
-            buf[0].ip_port.ip.family =  AF_INET6;
-            size = SIZE_IP6 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1;
-            tcp_enabled = 0x00;
-            break;
-        }
-        case TOX_TCP_INET:{
-            fread(&buf[0].ip_port.ip.ip4, 4, 1, stdin);
-            buf[0].ip_port.ip.family =  TCP_INET;
-            size = SIZE_IP4 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1;
-            tcp_enabled = 0x01;
-            break;
-        }
-        case TOX_TCP_INET6:{
-            fread(&buf[0].ip_port.ip.ip6, 16, 1, stdin);
-            buf[0].ip_port.ip.family =  TCP_INET6;
-            size = SIZE_IP6 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1;
-            tcp_enabled = 0x01;
-            break;
-        }
-        }
-        fread(&buf[0].ip_port.port, 2, 1, stdin);
-        fread(&buf[0].public_key, 32, 1, stdin);
-
-        uint8_t data[size];
-        pack_nodes(data, sizeof data, buf, 1);
-        unpack_nodes(nodes, 1, &processed_data_len, data, sizeof data, tcp_enabled);
-
-        putchar(RESULT_TAG_SUCCESS);
-        fwrite(nodes, sizeof nodes, 1, stdout);
+        binary_decode_nodeinfo();
     }
     else if(!memcmp(test_name, BINARY_ENCODE_WORD32, len_of_test_name)){
         binary_encode_word32();
@@ -316,6 +271,40 @@ void binary_encode_nodeinfo(void){
     pack_nodes(data, sizeof data, nodes, 1);
     putchar(RESULT_TAG_SUCCESS);
     fwrite(data, sizeof data, 1, stdout);
+}
+
+void binary_decode_nodeinfo(void){
+    uint64_t size;
+    fread(&size, sizeof size, 1, stdin);
+    size = htobe64(size);
+
+    uint8_t data[size];
+    fread(&data, size, 1, stdin);
+
+    Node_format nodes[1];
+    uint16_t processed_data_len;
+    uint8_t tcp_enabled = data[0] == TOX_TCP_INET || data[0] == TOX_TCP_INET6
+        ? 0x01
+        : 0x00;
+
+    unpack_nodes(nodes, 1, &processed_data_len, data, sizeof data, tcp_enabled);
+
+    putchar(RESULT_TAG_SUCCESS);
+    //is tcp
+    nodes[0].ip_port.ip.family == TCP_INET || nodes[0].ip_port.ip.family == TCP_INET6
+        ? putchar(1)
+        : putchar(0);
+    //is ipv6
+    nodes[0].ip_port.ip.family == TCP_INET6 || nodes[0].ip_port.ip.family == AF_INET6
+        ? putchar(1)
+        : putchar(0);
+    //ip addr
+    nodes[0].ip_port.ip.family == TCP_INET || nodes[0].ip_port.ip.family == AF_INET
+        ? fwrite(&nodes[0].ip_port.ip.ip4, sizeof nodes[0].ip_port.ip.ip4, 1, stdout)
+        : fwrite(&nodes[0].ip_port.ip.ip6, sizeof nodes[0].ip_port.ip.ip6 , 1, stdout);
+
+    fwrite(&nodes[0].ip_port.port, sizeof nodes[0].ip_port.port, 1, stdout);
+    fwrite(&nodes[0].public_key, sizeof nodes[0].public_key, 1, stdout);
 }
 
 void binary_encode_word32(void){
