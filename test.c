@@ -125,37 +125,36 @@ int main(void)
         uint16_t processed_data_len = 0;
         int size;
         uint8_t tcp_enabled;
-        int ipv6 = -1;
-
-        fread(&buf[0].ip_port.ip.family, 1, 1, stdin);
+        uint8_t net_family;
+        fread(&net_family, 1, 1, stdin);
         //fprintf(stderr, "%s\n", buf[0].ip_port.ip.family);
-        switch (buf[0].ip_port.ip.family) {
+        switch (net_family) {
         case TOX_AF_INET: {
             fread(&buf[0].ip_port.ip.ip4, 4, 1, stdin);
+            buf[0].ip_port.ip.family =  AF_INET;
             size = SIZE_IP4 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1;
             tcp_enabled = 0x00;
-            ipv6 = 0;
             break;
         }
         case TOX_AF_INET6:{
             fread(&buf[0].ip_port.ip.ip6, 16, 1, stdin);
+            buf[0].ip_port.ip.family =  AF_INET6;
             size = SIZE_IP6 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1;
             tcp_enabled = 0x00;
-            ipv6 = 1;
             break;
         }
         case TOX_TCP_INET:{
             fread(&buf[0].ip_port.ip.ip4, 4, 1, stdin);
+            buf[0].ip_port.ip.family =  TCP_INET;
             size = SIZE_IP4 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1;
             tcp_enabled = 0x01;
-            ipv6 = 0;
             break;
         }
         case TOX_TCP_INET6:{
             fread(&buf[0].ip_port.ip.ip6, 16, 1, stdin);
+            buf[0].ip_port.ip.family =  TCP_INET6;
             size = SIZE_IP6 + sizeof(uint16_t) + crypto_box_PUBLICKEYBYTES + 1;
             tcp_enabled = 0x01;
-            ipv6 = 1;
             break;
         }
         }
@@ -163,21 +162,11 @@ int main(void)
         fread(&buf[0].public_key, 32, 1, stdin);
 
         uint8_t data[size];
-        if(ipv6){
-            data[0] = buf[0].ip_port.ip.family;
-            memcpy(data + 1, &buf[0].ip_port.ip.ip6, SIZE_IP6);
-            memcpy(data + 1 + SIZE_IP6, &buf[0].ip_port.port, sizeof(uint16_t));
-            memcpy(data + 1 + SIZE_IP6 + sizeof(uint16_t), buf[0].public_key, crypto_box_PUBLICKEYBYTES);
-        }else{
-            data[0] = buf[0].ip_port.ip.family;
-            memcpy(data + 1, &buf[0].ip_port.ip.ip4, SIZE_IP4);
-            memcpy(data + 1 + SIZE_IP4, &buf[0].ip_port.port, sizeof(uint16_t));
-            memcpy(data + 1 + SIZE_IP4 + sizeof(uint16_t), buf[0].public_key, crypto_box_PUBLICKEYBYTES);
-        }
+        pack_nodes(data, sizeof data, buf, 1);
         unpack_nodes(nodes, 1, &processed_data_len, data, sizeof data, tcp_enabled);
 
         putchar(RESULT_TAG_SUCCESS);
-        fwrite(data, sizeof data, 1, stdout);
+        fwrite(nodes, sizeof nodes, 1, stdout);
     }
     else if(!memcmp(test_name, BINARY_ENCODE_WORD32, len_of_test_name)){
         binary_encode_word32();
