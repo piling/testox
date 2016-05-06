@@ -71,6 +71,21 @@
 #define TEST_SUCCESS             "SuccessTest"
 #define TEST_SKIPPED             "SkippedTest"
 
+#define MAX_CMD_LENGTH 512
+
+void test_kbucket(int argc, char (*argv)[MAX_CMD_LENGTH]);
+
+
+typedef struct TESTS {
+    const char *test;
+    void  (*function)(int argc, char (*argv)[MAX_CMD_LENGTH]);
+} TESTS;
+
+TESTS tests[] = {
+    {"KBucketIndex",    test_kbucket    },
+    {NULL,              NULL            },
+};
+
 /*
  * The Result type is written to stdout. It is a single byte
  * for Failure (0x00), Success (0x01), and Skipped (0x02),
@@ -120,7 +135,6 @@ typedef struct{
 
 
 
-void test_kbucket(void);
 void test_distance(void);
 /***************************test.h************************/
 
@@ -141,7 +155,7 @@ int main(void)
         test_distance();
     }
     else if(!memcmp(test_name, K_BUCKET_INDEX, len_of_test_name)){
-        test_kbucket();
+        // test_kbucket();
     }
     else if(!memcmp(test_name, K_BUCKET_NODES, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
@@ -284,7 +298,7 @@ int main(void)
 }
 
 
-void test_kbucket(void) {
+void test_kbucket(int argc, char (*argv)[MAX_CMD_LENGTH]) {
     /*
      * Given public keys.
      */
