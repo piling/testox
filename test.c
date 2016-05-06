@@ -109,7 +109,6 @@ TESTS tests[] = {
 #define ORDERING_EQUAL           0x01
 #define ORDERING_GREATER         0x02
 
-void test_kbucket(void);
 void test_distance(void);
 void binary_encode_nodeinfo(void);
 void binary_encode_word32(void);
