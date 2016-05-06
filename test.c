@@ -89,7 +89,7 @@ void test_distance(void);
 void binary_encode_nodeinfo(void);
 void binary_encode_word32(void);
 void binary_encode_bytestring(void);
-void binary_decode_nodeinfo(void);
+void binary_decode_nodeinfo(char *test_name, uint64_t len);
 /***************************test.h************************/
 
 int main(void)
@@ -121,7 +121,7 @@ int main(void)
         binary_encode_nodeinfo();
     }
     else if(!memcmp(test_name, BINARY_DECODE_NODEINFO, len_of_test_name)){
-        binary_decode_nodeinfo();
+        binary_decode_nodeinfo(test_name, len_of_test_name);
     }
     else if(!memcmp(test_name, BINARY_ENCODE_WORD32, len_of_test_name)){
         binary_encode_word32();
@@ -273,7 +273,7 @@ void binary_encode_nodeinfo(void){
     fwrite(data, sizeof data, 1, stdout);
 }
 
-void binary_decode_nodeinfo(void){
+void binary_decode_nodeinfo(char *test_name, uint64_t len){
     uint64_t size;
     fread(&size, sizeof size, 1, stdin);
     size = htobe64(size);
@@ -287,24 +287,34 @@ void binary_decode_nodeinfo(void){
         ? 0x01
         : 0x00;
 
-    unpack_nodes(nodes, 1, &processed_data_len, data, sizeof data, tcp_enabled);
+    int num = unpack_nodes(nodes, 1, &processed_data_len, data, sizeof data, tcp_enabled);
 
-    putchar(RESULT_TAG_SUCCESS);
-    //is tcp
-    nodes[0].ip_port.ip.family == TCP_INET || nodes[0].ip_port.ip.family == TCP_INET6
-        ? putchar(1)
-        : putchar(0);
-    //is ipv6
-    nodes[0].ip_port.ip.family == TCP_INET6 || nodes[0].ip_port.ip.family == AF_INET6
-        ? putchar(1)
-        : putchar(0);
-    //ip addr
-    nodes[0].ip_port.ip.family == TCP_INET || nodes[0].ip_port.ip.family == AF_INET
-        ? fwrite(&nodes[0].ip_port.ip.ip4, sizeof nodes[0].ip_port.ip.ip4, 1, stdout)
-        : fwrite(&nodes[0].ip_port.ip.ip6, sizeof nodes[0].ip_port.ip.ip6 , 1, stdout);
-
-    fwrite(&nodes[0].ip_port.port, sizeof nodes[0].ip_port.port, 1, stdout);
-    fwrite(&nodes[0].public_key, sizeof nodes[0].public_key, 1, stdout);
+    if(num > 0){
+        putchar(RESULT_TAG_SUCCESS);
+        //is tcp
+        nodes[0].ip_port.ip.family == TCP_INET || nodes[0].ip_port.ip.family == TCP_INET6
+            ? putchar(1)
+            : putchar(0);
+        //is ipv6
+        nodes[0].ip_port.ip.family == TCP_INET6 || nodes[0].ip_port.ip.family == AF_INET6
+            ? putchar(1)
+            : putchar(0);
+        //ip addr
+        nodes[0].ip_port.ip.family == TCP_INET || nodes[0].ip_port.ip.family == AF_INET
+            ? fwrite(&nodes[0].ip_port.ip.ip4, sizeof nodes[0].ip_port.ip.ip4, 1, stdout)
+            : fwrite(&nodes[0].ip_port.ip.ip6, sizeof nodes[0].ip_port.ip.ip6 , 1, stdout);
+        fwrite(&nodes[0].ip_port.port, sizeof nodes[0].ip_port.port, 1, stdout);
+        fwrite(&nodes[0].public_key, sizeof nodes[0].public_key, 1, stdout);
+    }
+    else{
+        putchar(RESULT_TAG_FAILURE);
+        //prefixed-length of error message
+        for (int i = 0; i < 7; i++) {
+            putchar(0);
+        }
+        putchar(len);
+        printf("%s", test_name);
+    }
 }
 
 void binary_encode_word32(void){
