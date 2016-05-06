@@ -90,8 +90,10 @@ void binary_encode_nodeinfo(void);
 void binary_encode_word32(void);
 void binary_encode_bytestring(void);
 void binary_decode_nodeinfo(char *test_name, uint64_t len);
+void nonce_increment(void);
 /***************************test.h************************/
 
+int i = 0;
 int main(void)
 {
     uint64_t len_of_test_name;
@@ -115,7 +117,7 @@ int main(void)
         putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, NONCE_INCREMENT, len_of_test_name)){
-        putchar(RESULT_TAG_SKIPPED);
+        nonce_increment();
     }
     else if(!memcmp(test_name, BINARY_ENCODE_NODEINFO, len_of_test_name)){
         binary_encode_nodeinfo();
@@ -127,7 +129,11 @@ int main(void)
         binary_encode_word32();
     }
     else if(!memcmp(test_name, BINARY_DECODE_WORD32, len_of_test_name)){
-        putchar(RESULT_TAG_SKIPPED);
+        uint32_t word32;
+        fread(&word32, sizeof word32, 1, stdin);
+
+        putchar(RESULT_TAG_SUCCESS);
+        fwrite(&word32, sizeof word32, 1, stdout);
     }
     else if(!memcmp(test_name, BINARY_ENCODE_STRING, len_of_test_name)){
 /*
@@ -143,7 +149,6 @@ int main(void)
         fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
         fwrite(&bencode_string, sizeof bencode_string, 1, stdout);
 */
-
         putchar(RESULT_TAG_SKIPPED);
     }
     else if(!memcmp(test_name, BINARY_DECODE_STRING, len_of_test_name)){
@@ -153,10 +158,10 @@ int main(void)
         binary_encode_bytestring();
     }
     else if(!memcmp(test_name, TEST_FAILURE, len_of_test_name)){
-        putchar(RESULT_TAG_SKIPPED);
+        putchar(RESULT_TAG_FAILURE);
     }
     else if(!memcmp(test_name, TEST_SUCCESS, len_of_test_name)){
-        putchar(RESULT_TAG_SKIPPED);
+        putchar(RESULT_TAG_SUCCESS);
     }
     else if(!memcmp(test_name, TEST_SKIPPED, len_of_test_name)){
         putchar(RESULT_TAG_SKIPPED);
@@ -318,11 +323,9 @@ void binary_decode_nodeinfo(char *test_name, uint64_t len){
 }
 
 void binary_encode_word32(void){
-    //word32
-    unsigned int word32;
+    uint32_t word32;
     fread(&word32, sizeof word32, 1, stdin);
 
-    //success tag
     putchar(RESULT_TAG_SUCCESS);
     fwrite(&word32, sizeof word32, 1, stdout);
 }
@@ -339,4 +342,12 @@ void binary_encode_bytestring(void){
     putchar(RESULT_TAG_SUCCESS);
     fwrite(&bencode_len_of_list, sizeof bencode_len_of_list, 1, stdout);
     fwrite(&bencode_bytestring, sizeof bencode_bytestring, 1, stdout);
+}
+
+void nonce_increment(void){
+    uint8_t nonce[24];
+    fread(&nonce, sizeof nonce, 1, stdin);
+    increment_nonce(nonce);
+    putchar(RESULT_TAG_SUCCESS);
+    fwrite(&nonce, sizeof nonce , 1, stdout);
 }

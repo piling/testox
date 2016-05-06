@@ -88,3 +88,4 @@ void binary_encode_nodeinfo(void);
 void binary_encode_word32(void);
 void binary_encode_bytestring(void);
 void binary_decode_nodeinfo(char *test_name, uint64_t len);
+void nonce_increment(void);
