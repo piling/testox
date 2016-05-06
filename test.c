@@ -129,6 +129,17 @@ int main(void)
     char test_name[len_of_test_name];
     fread(&test_name, len_of_test_name, 1, stdin);
 
+    uint test_number = 0;
+    while (tests[test_number].test) {
+        if (memcmp(test_name, tests[test_number].test, len_of_test_name) == 0) {
+            /* We don't pass anything to functions yet, so 0, NULL is ugly but correct. */
+            (tests[test_number].function)(0, NULL);
+        }
+
+
+        test_number++;
+    }
+
     if(!memcmp(test_name, DISTANCE, len_of_test_name)){
         test_distance();
     }
