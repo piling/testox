@@ -130,10 +130,15 @@ int main(void)
     }
     else if(!memcmp(test_name, BINARY_DECODE_WORD32, len_of_test_name)){
         uint32_t word32;
-        fread(&word32, sizeof word32, 1, stdin);
-
-        putchar(RESULT_TAG_SUCCESS);
-        fwrite(&word32, sizeof word32, 1, stdout);
+        int len = fread(&word32, 1, sizeof word32, stdin);
+        //fprintf(stderr, "%d\n", len);
+        if(len == 4){
+            putchar(RESULT_TAG_SUCCESS);
+            fwrite(&word32, sizeof word32, 1, stdout);
+        }else{
+            putchar(RESULT_TAG_FAILURE);
+            fwrite(&word32, sizeof word32, 1, stdout);
+        }
     }
     else if(!memcmp(test_name, BINARY_ENCODE_STRING, len_of_test_name)){
 /*
