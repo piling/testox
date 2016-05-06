@@ -73,19 +73,6 @@
 
 #define MAX_CMD_LENGTH 512
 
-void test_kbucket(int argc, char (*argv)[MAX_CMD_LENGTH]);
-
-
-typedef struct TESTS {
-    const char *test;
-    void  (*function)(int argc, char (*argv)[MAX_CMD_LENGTH]);
-} TESTS;
-
-TESTS tests[] = {
-    {"KBucketIndex",    test_kbucket    },
-    {NULL,              NULL            },
-};
-
 /*
  * The Result type is written to stdout. It is a single byte
  * for Failure (0x00), Success (0x01), and Skipped (0x02),
@@ -133,10 +120,40 @@ typedef struct{
     unsigned char public_key[32];
 }DNodeInfo;
 
-
-
-void test_distance(void);
 /***************************test.h************************/
+
+/** TODO docs for kbucket tests */
+void test_kbucket(int argc, char (*argv)[MAX_CMD_LENGTH]) {
+    /*
+     * Given public keys.
+     */
+    unsigned char self_pk[32];
+    unsigned char other_pk[32];
+
+    /*
+     * Reading given public keys from stdin.
+     */
+    fread(&self_pk, sizeof(self_pk), 1, stdin);
+    fread(&other_pk, sizeof(other_pk), 1, stdin);
+
+    putchar(1);
+    putchar(1);
+    putchar(bit_by_bit_cmp(self_pk, other_pk));
+}
+
+/** struct to look through all tests. */
+typedef struct TESTS {
+    const char *test;
+    void  (*function)(int argc, char (*argv)[MAX_CMD_LENGTH]);
+} TESTS;
+
+
+/** List of tests we support */
+TESTS tests[] = {
+    {"KBucketIndex",        test_kbucket    },
+    {NULL,                  NULL            },
+};
+
 
 int main(void)
 {
@@ -295,25 +312,6 @@ int main(void)
         printf("%s", failure_message);
     }
     return 0;
-}
-
-
-void test_kbucket(int argc, char (*argv)[MAX_CMD_LENGTH]) {
-    /*
-     * Given public keys.
-     */
-    unsigned char self_pk[32];
-    unsigned char other_pk[32];
-
-    /*
-     * Reading given public keys from stdin.
-     */
-    fread(&self_pk, sizeof(self_pk), 1, stdin);
-    fread(&other_pk, sizeof(other_pk), 1, stdin);
-
-    putchar(1);
-    putchar(1);
-    putchar(bit_by_bit_cmp(self_pk, other_pk));
 }
 
 
