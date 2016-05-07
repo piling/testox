@@ -1,11 +1,20 @@
-toxcore:
-ifneq ($(wildcard ../toxcore/.*),)
-	cd ../toxcore && autoreconf -i && ./configure --prefix=/user && make && make install
-else
-	cd ../ && git clone https://github.com/pirebok/toxcore.git && cd toxcore && autoreconf -i && ./configure --prefix=/usr && make && make install
-endif
+## Testox Make file ##
+# v0.0
 
+SRC = $(wildcard ./*.c)
+OBJ = $(SRC:.c=.o)
 
-test:
-	gcc test.c -o test-piling -lsodium -ltoxcore
+DEPS = libtoxcore lsodium
 
+all: test
+
+test: $(OBJ)
+	@echo " Linking $@"
+	$(CC) $(CFLAGS) $(OBJ) ../toxcore/*.o -o testox
+
+$(OBJ): %.o: %.c
+	@echo " Compling $@"
+	@$(CC) $(CFLAGS) -o %@ $<
+
+clean:
+	rm -f *.o
