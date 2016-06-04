@@ -60,11 +60,12 @@ TESTS tests[] = {
     {"BinaryEncode ByteString",        binary_encode_bytestring    },
     {"BinaryEncode String",            binary_encode_string        },
     {"BinaryDecode String",            binary_decode_string        },
-    {"Failuretest",                    test_failure                },
     {"SuccessTest",                    test_success                },
+    {"Failuretest",                    test_failure                },
     {"SkippedTest",                    test_skipped                },
     {NULL,                             NULL                        },
 };
+
 
 
 
@@ -129,7 +130,45 @@ void test_kbucket(int argc, char (*argv)[MAX_CMD_LENGTH]) {
 }
 
 void test_kbucket_nodes(int argc, char (*argv)[MAX_CMD_LENGTH]){
-    putchar(RESULT_TAG_SKIPPED);
+    uint64_t bucket_size;
+    uint8_t base_key[crypto_box_PUBLICKEYBYTES];
+
+    fread(&bucket_size, sizeof bucket_size, 1, stdin);
+    bucket_size = htobe64(bucket_size);
+    fread(&base_key, crypto_box_PUBLICKEYBYTES, 1, stdin);
+
+    Node_format nodes[bucket_size];
+
+    for(int i = 0; i < bucket_size; i++){
+        char is_tcp;
+        char is_ipv6;
+
+        fread(&is_tcp, 1, 1, stdin);
+        fread(&is_ipv6, 1, 1, stdin);
+
+        if(is_ipv6){
+            fread(&nodes[i].ip_port.ip.ip6, SIZE_IP6, 1, stdin);
+            if(is_tcp)
+                nodes[i].ip_port.ip.family = TCP_INET6;
+            else
+                nodes[i].ip_port.ip.family = AF_INET6;
+        }
+        else{
+            fread(&nodes[i].ip_port.ip.ip4, SIZE_IP4, 1, stdin);
+            if(is_tcp)
+                nodes[i].ip_port.ip.family = TCP_INET;
+            else
+                nodes[i].ip_port.ip.family = AF_INET;
+        }
+        fread(&nodes[i].ip_port.port, sizeof(uint16_t), 1, stdin);
+        fread(&nodes[i].public_key, crypto_box_PUBLICKEYBYTES, 1, stdin);
+    }
+
+    uint8_t *keys[bucket_size];
+    for(int i = 0; i< bucket_size; i++){
+        fread(&keys[i], crypto_box_PUBLICKEYBYTES, 1, stdin);
+    }
+
 }
 
 void nonce_increment(int argc, char (*argv)[MAX_CMD_LENGTH]){
@@ -255,12 +294,12 @@ void binary_decode_string(int argc, char (*argv)[MAX_CMD_LENGTH]){
     putchar(RESULT_TAG_SKIPPED);
 }
 
-void test_failure(int argc, char (*argv)[MAX_CMD_LENGTH]){
-    putchar(RESULT_TAG_FAILURE);
+void test_success(int argc, char (*argv)[MAX_CMD_LENGTH]){
+    putchar(RESULT_TAG_SKIPPED);
 }
 
-void test_success(int argc, char (*argv)[MAX_CMD_LENGTH]){
-    putchar(RESULT_TAG_SUCCESS);
+void test_failure(int argc, char (*argv)[MAX_CMD_LENGTH]){
+    putchar(RESULT_TAG_SKIPPED);
 }
 
 void test_skipped(int argc, char (*argv)[MAX_CMD_LENGTH]){
