@@ -164,9 +164,11 @@ void test_kbucket_nodes(int argc, char (*argv)[MAX_CMD_LENGTH]){
         fread(&nodes[i].public_key, crypto_box_PUBLICKEYBYTES, 1, stdin);
     }
 
-    uint8_t *keys[bucket_size];
+    uint8_t keys[bucket_size][crypto_box_PUBLICKEYBYTES + 1];
     for(int i = 0; i< bucket_size; i++){
-        fread(&keys[i], crypto_box_PUBLICKEYBYTES, 1, stdin);
+        uint8_t buf[crypto_box_PUBLICKEYBYTES];
+        fread(&buf, crypto_box_PUBLICKEYBYTES, 1, stdin);
+        strcpy(keys[i], buf);
     }
 
 }
